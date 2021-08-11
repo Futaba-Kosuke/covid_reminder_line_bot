@@ -6,6 +6,9 @@ authors = ["Futaba-Kosuke <k.futaba2828@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
+fastapi = "^0.68.0"
+uvicorn = "^0.14.0"
+aiolinebot = "^0.4.1"
 
 [tool.poetry.dev-dependencies]
 
