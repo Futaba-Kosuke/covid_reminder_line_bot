@@ -15,6 +15,12 @@ if not (line_secret := os.environ.get(
     "POETRY_COVID19_REMINDER_LINE_BOT_CHANNEL_SECRET")):
     sys.exit("")
 
+# create line api client
+line_api = AioLineBotApi(channel_access_token=line_token)
+
+# create parser
+parser = WebhookParser(channel_secret=line_secret)
+
 # startup FastAPI
 app = FastAPI()
 
