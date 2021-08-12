@@ -4,7 +4,7 @@ import sys
 import uvicorn
 from fastapi import FastAPI, Request, Response, BackgroundTasks
 from linebot import WebhookParser, exceptions
-from linebot.models import TextMessage
+from linebot.models import TextMessage, events
 from aiolinebot import AioLineBotApi
 
 # get token and secret from os environment
