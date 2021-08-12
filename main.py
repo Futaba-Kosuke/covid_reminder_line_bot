@@ -4,7 +4,7 @@ import sys
 import uvicorn
 from fastapi import FastAPI, Request, Response, BackgroundTasks
 from linebot import WebhookParser, exceptions
-from linebot.models import TextMessage
+from linebot.models import TextMessage, events
 from aiolinebot import AioLineBotApi
 
 # get token and secret from os environment
@@ -31,11 +31,12 @@ def main():
 
 # body of echo
 async def echo_body(event) -> None:
-    await line_api.reply_message_async(
-        event.reply_token,
-        TextMessage(text=f"{event.message.text}")
-    )
-    pass
+    if isinstance(event.message, events.TextMessage):
+        await line_api.reply_message_async(
+            event.reply_token,
+            TextMessage(text=f"{event.message.text}")
+        )
+    
 
 @app.post("/messaging_api/echo")
 async def echo(
