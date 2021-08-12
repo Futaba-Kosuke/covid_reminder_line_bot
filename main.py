@@ -1,8 +1,9 @@
 import os
 import sys
+from typing import Literal
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from linebot import WebhookParser
 from linebot.models import TextMessage
 from aiolinebot import AioLineBotApi
@@ -27,6 +28,24 @@ app = FastAPI()
 
 def main():
     uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True, workers=2)
+
+
+@app.post("/messaging_api/echo")
+async def echo(request: Request) -> Literal['ok']:
+    # parse request and get events
+    events = parser.parse(
+        (await request.body()).decode("utf-8"),
+        request.headers.get("X-Line-Signature", "")
+    )
+
+    # process each event
+    for ev in events:
+        await line_api.reply_message_async(
+            ev.reply_token,
+            TextMessage(text=f"{ev.message.text}")
+        )
+    
+    return "ok"
 
 
 if __name__ == '__main__':
