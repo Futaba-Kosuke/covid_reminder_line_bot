@@ -1,6 +1,21 @@
+import os
+import sys
+
 import uvicorn
 from fastapi import FastAPI
+from linebot import WebhookParser
+from linebot.models import TextMessage
+from aiolinebot import AioLineBotApi
 
+# get token and secret from os environment
+if not (line_token := os.environ.get(
+    "POETRY_COVID19_REMINDER_LINE_BOT_TOKEN")):
+    sys.exit("")
+if not (line_secret := os.environ.get(
+    "POETRY_COVID19_REMINDER_LINE_BOT_CHANNEL_SECRET")):
+    sys.exit("")
+
+# startup FastAPI
 app = FastAPI()
 
 
