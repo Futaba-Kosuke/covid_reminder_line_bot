@@ -1,6 +1,5 @@
 import os
 import sys
-from typing import Literal
 
 import uvicorn
 from fastapi import FastAPI, Request, Response, BackgroundTasks
@@ -31,7 +30,7 @@ def main():
 
 
 # body of echo
-async def echo_body(event):
+async def echo_body(event) -> None:
     await line_api.reply_message_async(
         event.reply_token,
         TextMessage(text=f"{event.message.text}")
@@ -40,7 +39,7 @@ async def echo_body(event):
 
 @app.post("/messaging_api/echo")
 async def echo(
-    request: Request, background_tasks: BackgroundTasks):
+    request: Request, background_tasks: BackgroundTasks) -> Response:
     # parse request and get events
     try:
         events = parser.parse(
