@@ -1,11 +1,11 @@
 import os
 import sys
-from typing import Final
+from typing import Final, List, NoReturn, Type
 
 import uvicorn
 from fastapi import FastAPI, Request, Response, BackgroundTasks
 from linebot import WebhookParser, exceptions
-from linebot.models import TextMessage
+from linebot.models import TextMessage, events
 from aiolinebot import AioLineBotApi
 
 
@@ -23,24 +23,27 @@ line_api = AioLineBotApi(channel_access_token=LINE_TOKEN)
 # create parser
 parser = WebhookParser(channel_secret=LINE_SECRET)
 
+# definite peculiar types
+LINE_MESSAGE_EVENT:Final[Type[events.MessageEvent]] = Final[events.MessageEvent]
+LINE_TEXTMESSAGE_EVENT:Final[Type[events.TextMessage]] = Final[events.TextMessage]
+
 # startup FastAPI
 app = FastAPI()
 
 
 # body of echo
-async def echo_body(event) -> None:
-    if isinstance(event.message, TextMessage):
-        await line_api.reply_message_async(
-            event.reply_token,
-            TextMessage(text=f"{event.message.text}")
-        )
+async def echo_body(event: LINE_TEXTMESSAGE_EVENT) -> NoReturn:
+    await line_api.reply_message_async(
+        event.reply_token,
+        TextMessage(text=f"{event.message.text}")
+    )
     
 
 @app.post("/messaging_api/echo")
 async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
     # parse request and get events
     try:
-        events = parser.parse(
+        events:List[LINE_MESSAGE_EVENT] = parser.parse(
             (await request.body()).decode("utf-8"),
             request.headers.get("X-Line-Signature", "")
         )
@@ -51,7 +54,8 @@ async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
 
     # process each event
     for ev in events:
-        background_tasks.add_task(echo_body, event=ev)
+        if isinstance(ev.message, TextMessage):
+            background_tasks.add_task(echo_body, event=ev)
 
     # return response
     return Response(content="OK", status_code=200)
