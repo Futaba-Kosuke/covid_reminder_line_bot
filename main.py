@@ -56,7 +56,7 @@ async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
 
     # process each event
     for ev in events:
-        background_tasks.add_task(echo_body, event = ev)
+        background_tasks.add_task(echo_body, event=ev)
 
     # return response
     return Response(content="OK", status_code=200)
