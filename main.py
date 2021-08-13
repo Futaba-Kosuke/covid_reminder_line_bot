@@ -7,13 +7,16 @@ from linebot import WebhookParser, exceptions
 from linebot.models import TextMessage
 from aiolinebot import AioLineBotApi
 
-# get token and secret from os environment
-if not (line_token := os.environ.get(
-    "POETRY_COVID19_REMINDER_LINE_BOT_TOKEN")):
-    sys.exit("Environment variable not found ‘LINE_BOT_TOKEN’")
-if not (line_secret := os.environ.get(
-    "POETRY_COVID19_REMINDER_LINE_CHANNEL_SECRET")):
-    sys.exit("Environment variable not found ‘LINE_CHANNEL_SECRET’")
+# 標準モジュールなのでos等と同じ場所に置く
+from typing import Final
+
+LINE_TOKEN: Final[str] = os.getenv('COVID19_REMINDER_LINE_TOKEN')
+LINE_SECRET: Final[str] = os.getenv('COVID19_REMINDER_LINE_CHANNEL_SECRET')
+
+if LINE_TOKEN is None:
+    sys.exit("Environment variable not found ‘COVID19_REMINDER_LINE_BOT_TOKEN’")
+if LINE_SECRET is None:
+    sys.exit("Environment variable not found ‘COVID19_REMINDER_LINE_CHANNEL_SECRET’")
 
 # create line api client
 line_api = AioLineBotApi(channel_access_token=line_token)
@@ -27,6 +30,14 @@ app = FastAPI()
 
 def main():
     uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True, workers=2)
+    
+    
+if __name__ == '__main__':
+    main()
+    
+    
+if __name__ == '__main__':
+    main()
 
 
 # body of echo
@@ -39,8 +50,7 @@ async def echo_body(event) -> None:
     
 
 @app.post("/messaging_api/echo")
-async def echo(
-    request: Request, background_tasks: BackgroundTasks) -> Response:
+async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
     # parse request and get events
     try:
         events = parser.parse(
@@ -54,7 +64,7 @@ async def echo(
 
     # process each event
     for ev in events:
-        background_tasks.add_task(echo_body, event = ev)
+        background_tasks.add_task(echo_body, event=ev)
 
     # return response
     return Response(content="OK", status_code=200)
