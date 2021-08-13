@@ -1,5 +1,6 @@
 import os
 import sys
+from typing import Final
 
 import uvicorn
 from fastapi import FastAPI, Request, Response, BackgroundTasks
@@ -7,8 +8,6 @@ from linebot import WebhookParser, exceptions
 from linebot.models import TextMessage
 from aiolinebot import AioLineBotApi
 
-# 標準モジュールなのでos等と同じ場所に置く
-from typing import Final
 
 LINE_TOKEN: Final[str] = os.getenv('COVID19_REMINDER_LINE_TOKEN')
 LINE_SECRET: Final[str] = os.getenv('COVID19_REMINDER_LINE_CHANNEL_SECRET')
@@ -19,25 +18,13 @@ if LINE_SECRET is None:
     sys.exit("Environment variable not found ‘COVID19_REMINDER_LINE_CHANNEL_SECRET’")
 
 # create line api client
-line_api = AioLineBotApi(channel_access_token=line_token)
+line_api = AioLineBotApi(channel_access_token=LINE_TOKEN)
 
 # create parser
-parser = WebhookParser(channel_secret=line_secret)
+parser = WebhookParser(channel_secret=LINE_SECRET)
 
 # startup FastAPI
 app = FastAPI()
-
-
-def main():
-    uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True, workers=2)
-    
-    
-if __name__ == '__main__':
-    main()
-    
-    
-if __name__ == '__main__':
-    main()
 
 
 # body of echo
@@ -68,6 +55,10 @@ async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
 
     # return response
     return Response(content="OK", status_code=200)
+
+    
+def main():
+    uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True, workers=2)
 
 
 if __name__ == '__main__':
