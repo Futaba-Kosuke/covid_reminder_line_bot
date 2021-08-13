@@ -42,8 +42,7 @@ async def echo_body(event) -> None:
     
 
 @app.post("/messaging_api/echo")
-async def echo(
-    request: Request, background_tasks: BackgroundTasks) -> Response:
+async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
     # parse request and get events
     try:
         events = parser.parse(
