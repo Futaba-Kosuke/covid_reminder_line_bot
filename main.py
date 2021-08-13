@@ -49,8 +49,8 @@ async def echo(
         )
     except exceptions.InvalidSignatureError:
         print("Error: failed to parse events")
-        # return 503
-        return Response(content="Internal Server Error", status_code=503)
+        # return 500
+        return Response(content="Internal Server Error", status_code=500)
 
     # process each event
     for ev in events:
