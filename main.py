@@ -32,18 +32,18 @@ app = FastAPI()
 
 
 # body of echo
-async def echo_body(event: LINE_TEXTMESSAGE_EVENT) -> NoReturn:
+async def echo_body(event: LINE_TEXT_MESSAGE_EVENT_TYPE) -> NoReturn:
     await line_api.reply_message_async(
         event.reply_token,
         TextMessage(text=f"{event.message.text}")
     )
-    
+
 
 @app.post("/messaging_api/echo")
 async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
     # parse request and get events
     try:
-        request_events: List[LINE_MESSAGE_EVENT] = parser.parse(
+        request_events: List[LINE_MESSAGE_EVENT_TYPE] = parser.parse(
             (await request.body()).decode("utf-8"),
             request.headers.get("X-Line-Signature", "")
         )
@@ -54,13 +54,13 @@ async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
 
     # process each event
     for request_event in request_events:
-        if isinstance(ev.message, TextMessage):
-            background_tasks.add_task(echo_body, event=ev)
+        if isinstance(request_event.message, TextMessage):
+            background_tasks.add_task(echo_body, event=request_event)
 
     # return response
     return Response(content="OK", status_code=200)
 
-    
+
 def main():
     uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True, workers=2)
 
