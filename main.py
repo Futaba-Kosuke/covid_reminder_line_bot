@@ -43,7 +43,7 @@ async def echo_body(event: LINE_TEXTMESSAGE_EVENT) -> NoReturn:
 async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
     # parse request and get events
     try:
-        events:List[LINE_MESSAGE_EVENT] = parser.parse(
+        request_events: List[LINE_MESSAGE_EVENT] = parser.parse(
             (await request.body()).decode("utf-8"),
             request.headers.get("X-Line-Signature", "")
         )
