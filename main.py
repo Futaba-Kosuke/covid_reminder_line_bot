@@ -24,8 +24,8 @@ line_api = AioLineBotApi(channel_access_token=LINE_TOKEN)
 parser = WebhookParser(channel_secret=LINE_SECRET)
 
 # definite peculiar types
-LINE_MESSAGE_EVENT:Final[Type[events.MessageEvent]] = Final[events.MessageEvent]
-LINE_TEXTMESSAGE_EVENT:Final[Type[events.TextMessage]] = Final[events.TextMessage]
+LINE_MESSAGE_EVENT_TYPE = events.MessageEvent
+LINE_TEXT_MESSAGE_EVENT_TYPE = events.TextMessage
 
 # startup FastAPI
 app = FastAPI()
