@@ -53,7 +53,7 @@ async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
         return Response(content="Internal Server Error", status_code=500)
 
     # process each event
-    for ev in events:
+    for request_event in request_events:
         if isinstance(ev.message, TextMessage):
             background_tasks.add_task(echo_body, event=ev)
 
