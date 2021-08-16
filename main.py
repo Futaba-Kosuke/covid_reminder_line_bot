@@ -24,15 +24,15 @@ line_api = AioLineBotApi(channel_access_token=LINE_TOKEN)
 parser = WebhookParser(channel_secret=LINE_SECRET)
 
 # definite peculiar types
-LINE_MESSAGE_EVENT_TYPE = events.MessageEvent
-LINE_TEXT_MESSAGE_EVENT_TYPE = events.TextMessage
+LineMessageEventType = events.MessageEvent
+LineTextMessageEventType = events.TextMessage
 
 # startup FastAPI
 app = FastAPI()
 
 
 # body of echo
-async def echo_body(event: LINE_TEXT_MESSAGE_EVENT_TYPE) -> NoReturn:
+async def echo_body(event: LineTextMessageEventType) -> NoReturn:
     await line_api.reply_message_async(
         event.reply_token,
         TextMessage(text=f"{event.message.text}")
@@ -43,7 +43,7 @@ async def echo_body(event: LINE_TEXT_MESSAGE_EVENT_TYPE) -> NoReturn:
 async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
     # parse request and get events
     try:
-        request_events: List[LINE_MESSAGE_EVENT_TYPE] = parser.parse(
+        request_events: List[LineMessageEventType] = parser.parse(
             (await request.body()).decode("utf-8"),
             request.headers.get("X-Line-Signature", "")
         )
