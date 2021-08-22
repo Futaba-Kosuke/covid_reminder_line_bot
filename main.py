@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import Final, List, NoReturn, Type
+from typing import Final, List, NoReturn
 
 import uvicorn
 from fastapi import FastAPI, Request, Response, BackgroundTasks
