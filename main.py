@@ -10,7 +10,8 @@ from linebot.models.events \
     import MessageEvent as LineMessageEventType, TextMessage as LineTextMessageEventType
 from aiolinebot import AioLineBotApi
 
-from covid_data_getter import PatientsType, get_daily_patients, mock_get_target_prefectures
+from covid_data_getter \
+    import prefectures_dict, PatientsType, get_daily_patients, mock_get_target_prefectures
 
 LINE_ACCESS_TOKEN: Final[str] = os.getenv('COVID19_REMINDER_LINE_ACCESS_TOKEN')
 LINE_CHANNEL_SECRET: Final[str] = os.getenv('COVID19_REMINDER_LINE_CHANNEL_SECRET')
@@ -35,7 +36,7 @@ async def echo_body(event: LineTextMessageEventType) -> NoReturn:
     daily_patients: PatientsType = get_daily_patients()
     target_prefectures: List[str] = mock_get_target_prefectures()
 
-    reply_message: str = f'{target_prefectures[0]}の新規感染者数: {daily_patients[target_prefectures[0]]}'
+    reply_message: str = f'{prefectures_dict[target_prefectures[0]]}の新規感染者数: {daily_patients[target_prefectures[0]]}'
 
     await line_api.reply_message_async(
         event.reply_token,
