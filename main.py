@@ -9,21 +9,20 @@ from linebot import WebhookParser, exceptions
 from linebot.models import TextMessage, events
 from aiolinebot import AioLineBotApi
 
-
-LINE_TOKEN: Final[str] = os.getenv('COVID19_REMINDER_LINE_TOKEN')
-LINE_SECRET: Final[str] = os.getenv('COVID19_REMINDER_LINE_CHANNEL_SECRET')
+LINE_ACCESS_TOKEN: Final[str] = os.getenv('COVID19_REMINDER_LINE_ACCESS_TOKEN')
+LINE_CHANNEL_SECRET: Final[str] = os.getenv('COVID19_REMINDER_LINE_CHANNEL_SECRET')
 OPEN_DATA_URL: str = 'https://covid19.mhlw.go.jp/public/opendata/newly_confirmed_cases_daily.csv'
 
-if LINE_TOKEN is None:
-    sys.exit("Environment variable not found ‘COVID19_REMINDER_LINE_BOT_TOKEN’")
-if LINE_SECRET is None:
+if LINE_ACCESS_TOKEN is None:
+    sys.exit("Environment variable not found ‘COVID19_REMINDER_LINE_ACCESS_TOKEN’")
+if LINE_CHANNEL_SECRET is None:
     sys.exit("Environment variable not found ‘COVID19_REMINDER_LINE_CHANNEL_SECRET’")
 
 # create line api client
-line_api = AioLineBotApi(channel_access_token=LINE_TOKEN)
+line_api = AioLineBotApi(channel_access_token=LINE_ACCESS_TOKEN)
 
 # create parser
-parser = WebhookParser(channel_secret=LINE_SECRET)
+parser = WebhookParser(channel_secret=LINE_CHANNEL_SECRET)
 
 # startup FastAPI
 app = FastAPI()
