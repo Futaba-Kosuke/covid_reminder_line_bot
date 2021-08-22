@@ -5,7 +5,9 @@ from typing import Final, List, NoReturn
 import uvicorn
 from fastapi import FastAPI, Request, Response, BackgroundTasks
 from linebot import WebhookParser, exceptions
-from linebot.models import TextMessage, events
+from linebot.models import TextMessage
+from linebot.models.events \
+    import MessageEvent as LineMessageEventType, TextMessage as LineTextMessageEventType
 from aiolinebot import AioLineBotApi
 
 from covid_data_getter import PatientsType, get_daily_patients, mock_get_target_prefectures
@@ -26,10 +28,6 @@ parser = WebhookParser(channel_secret=LINE_CHANNEL_SECRET)
 
 # startup FastAPI
 app = FastAPI()
-
-# definite peculiar types
-LineMessageEventType = events.MessageEvent
-LineTextMessageEventType = events.TextMessage
 
 
 # body of echo
