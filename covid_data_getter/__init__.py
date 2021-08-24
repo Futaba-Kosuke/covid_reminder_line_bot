@@ -1,0 +1,1 @@
+from covid_data_getter.main import *

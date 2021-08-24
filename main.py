@@ -1,31 +1,31 @@
 import os
 import sys
-from typing import Final, List, NoReturn, Type
+from typing import Final, List, NoReturn
 
 import uvicorn
 from fastapi import FastAPI, Request, Response, BackgroundTasks
 from linebot import WebhookParser, exceptions
-from linebot.models import TextMessage, events
+from linebot.models import TextMessage
+from linebot.models.events \
+    import MessageEvent as LineMessageEventType, TextMessage as LineTextMessageEventType
 from aiolinebot import AioLineBotApi
 
+from covid_data_getter \
+    import prefectures_dict, PatientsType, get_daily_patients, mock_get_target_prefectures
 
-LINE_TOKEN: Final[str] = os.getenv('COVID19_REMINDER_LINE_TOKEN')
-LINE_SECRET: Final[str] = os.getenv('COVID19_REMINDER_LINE_CHANNEL_SECRET')
+LINE_ACCESS_TOKEN: Final[str] = os.getenv('COVID19_REMINDER_LINE_ACCESS_TOKEN')
+LINE_CHANNEL_SECRET: Final[str] = os.getenv('COVID19_REMINDER_LINE_CHANNEL_SECRET')
 
-if LINE_TOKEN is None:
-    sys.exit("Environment variable not found ‘COVID19_REMINDER_LINE_BOT_TOKEN’")
-if LINE_SECRET is None:
+if LINE_ACCESS_TOKEN is None:
+    sys.exit("Environment variable not found ‘COVID19_REMINDER_LINE_ACCESS_TOKEN’")
+if LINE_CHANNEL_SECRET is None:
     sys.exit("Environment variable not found ‘COVID19_REMINDER_LINE_CHANNEL_SECRET’")
 
 # create line api client
-line_api = AioLineBotApi(channel_access_token=LINE_TOKEN)
+line_api = AioLineBotApi(channel_access_token=LINE_ACCESS_TOKEN)
 
 # create parser
-parser = WebhookParser(channel_secret=LINE_SECRET)
-
-# definite peculiar types
-LineMessageEventType = events.MessageEvent
-LineTextMessageEventType = events.TextMessage
+parser = WebhookParser(channel_secret=LINE_CHANNEL_SECRET)
 
 # startup FastAPI
 app = FastAPI()
@@ -33,10 +33,16 @@ app = FastAPI()
 
 # body of echo
 async def echo_body(event: LineTextMessageEventType) -> NoReturn:
+    daily_patients: PatientsType = get_daily_patients()
+    target_prefectures: List[str] = mock_get_target_prefectures()
+
+    reply_message: str = f'{prefectures_dict[target_prefectures[0]]}の新規感染者数: {daily_patients[target_prefectures[0]]}'
+
     await line_api.reply_message_async(
         event.reply_token,
-        TextMessage(text=f"{event.message.text}")
+        TextMessage(text=reply_message)
     )
+    return
 
 
 @app.post("/messaging_api/echo")
