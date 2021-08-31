@@ -12,6 +12,7 @@ from aiolinebot import AioLineBotApi
 
 from covid_data_getter \
     import prefectures_dict, PatientsType, get_daily_patients, mock_get_target_prefectures
+from db_connector import get_reference
 
 LINE_ACCESS_TOKEN: Final[str] = os.getenv('COVID19_REMINDER_LINE_ACCESS_TOKEN')
 LINE_CHANNEL_SECRET: Final[str] = os.getenv('COVID19_REMINDER_LINE_CHANNEL_SECRET')
@@ -32,16 +33,34 @@ app = FastAPI()
 
 
 # body of echo
-async def echo_body(event: LineTextMessageEventType) -> NoReturn:
-    daily_patients: PatientsType = get_daily_patients()
-    target_prefectures: List[str] = mock_get_target_prefectures()
+async def echo_body(event: LineTextMessageEventType, message_text: str) -> NoReturn:
+    message_text = message_text.split()
+    if message_text[0] == "登録" and len(message_text) >= 1:
+        prefectures_list = {"全国" : "ALL"}
+        prefectures_list |= ((name, id) for id, name in list(prefectures_dict.items())[1:])
+        prefectures_list |= ((name[:-1], id) for id, name in list(prefectures_dict.items())[1:])
+        if message_text[1] in prefectures_list.keys():
+            # 
+            # update prefectures collection
+            prefectures_ref = get_reference("prefectures")
+            
+            print(prefectures_list[message_text[1]])
+        else:
+            await line_api.reply_message_async(
+                event.reply_token,
+                TextMessage(text="都道府県名の指定が正しくありません。")
+            )
+        pass
+    else:
+        daily_patients: PatientsType = get_daily_patients()
+        target_prefectures: List[str] = mock_get_target_prefectures()
 
-    reply_message: str = f'{prefectures_dict[target_prefectures[0]]}の新規感染者数: {daily_patients[target_prefectures[0]]}'
+        reply_message: str = f'{prefectures_dict[target_prefectures[0]]}の新規感染者数: {daily_patients[target_prefectures[0]]}'
 
-    await line_api.reply_message_async(
-        event.reply_token,
-        TextMessage(text=reply_message)
-    )
+        await line_api.reply_message_async(
+            event.reply_token,
+            TextMessage(text=reply_message)
+        )
     return
 
 
@@ -61,7 +80,7 @@ async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
     # process each event
     for request_event in request_events:
         if isinstance(request_event.message, TextMessage):
-            background_tasks.add_task(echo_body, event=request_event)
+            background_tasks.add_task(echo_body, event=request_event, message_text=request_event.message.text)
 
     # return response
     return Response(content="OK", status_code=200)
