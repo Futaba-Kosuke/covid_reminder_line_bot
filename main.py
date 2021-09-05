@@ -11,7 +11,7 @@ from linebot.models.events \
 from aiolinebot import AioLineBotApi
 
 from covid_data_getter \
-    import prefectures_dict, PatientsType, get_daily_patients, mock_get_target_prefectures
+    import prefectures_dict, PatientsType, get_daily_patients
 from db_connector import Firebase
 
 LINE_ACCESS_TOKEN: Final[str] = os.getenv('COVID19_REMINDER_LINE_ACCESS_TOKEN')

@@ -25,15 +25,15 @@ class Firebase:
             list(users_collection.where(u'userid', u'==', user_id).stream())[0] \
             .to_dict()['prefectureid']
 
-    def register_user(self, user_id: str, prefecture_id: str):
+    def register_user(self, user_id: str, prefecture_id: str) -> NoReturn:
         users_collection = self.db.collection("users")
         users_collection.add({"userid": user_id, "prefectureid": prefecture_id})
 
-    def search_user(self, user_id: str):
+    def search_user(self, user_id: str) -> NoReturn:
         users_collection = self.db.collection("users")
         return list(users_collection.where(u'userid', u'==', user_id).stream())
 
-    def update_user_prefecture_id(self, user_id: str, prefecture_id: str):
+    def update_user_prefecture_id(self, user_id: str, prefecture_id: str) -> NoReturn:
         users_collection = self.db.collection("users")
         users_doc = list(users_collection.where(u'userid', u'==', user_id).stream())[0]
         users_doc_dict = users_doc.to_dict()
@@ -41,7 +41,8 @@ class Firebase:
         users_doc_dict["prefectureid"] = prefecture_id
         self.db.collection("users").document(users_doc.id).set(users_doc_dict)
 
-    def update_prefecture_userid_list(self, prefecture_id: str, user_id: str, action: str):
+    def update_prefecture_userid_list(
+            self, prefecture_id: str, user_id: str, action: str) -> NoReturn:
         prefecture_collection = self.db.collection("prefectures")
         prefecture_doc = list(prefecture_collection.where(u'id', u'==', prefecture_id).stream())[0]
         prefecture_doc_dict = prefecture_doc.to_dict()
