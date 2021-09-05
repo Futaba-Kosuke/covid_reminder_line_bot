@@ -19,15 +19,18 @@ class Firebase:
 
     def get_user_prefecture(self, user_id: str) -> str:
         users_collection = self.db.collection("users")
-        return \
-            list(users_collection.where(u'userid', u'==', user_id).stream())[0] \
-            .to_dict()['prefectureid']
+        try:
+            user_prefecture = list(users_collection.where(u'userid', u'==', user_id)\
+            .stream())[0].to_dict()['prefectureid']
+        except IndexError:
+            return "Fukui"
+        return user_prefecture
 
     def register_user(self, user_id: str, prefecture_id: str) -> NoReturn:
         users_collection = self.db.collection("users")
         users_collection.add({"userid": user_id, "prefectureid": prefecture_id})
 
-    def search_user(self, user_id: str) -> NoReturn:
+    def search_user(self, user_id: str):
         users_collection = self.db.collection("users")
         return list(users_collection.where(u'userid', u'==', user_id).stream())
 
