@@ -13,9 +13,7 @@ class Firebase:
     def __init__(self) -> NoReturn:
         FIREBASE_CRED_ID: Final[str] = os.getenv("COVID19_REMINDER_FIREBASE_CRED_ID")
         cred: credentials.Certificate \
-            = credentials.Certificate(os.path.dirname(__file__)
-                                      + "\\covid-reminder-line-bot-firebase-adminsdk-"
-                                      + FIREBASE_CRED_ID + ".json")
+            = credentials.Certificate("./db_connector/cred.json")
         self.db: Client = firestore.client(
             firebase_admin.initialize_app(cred, name=str(random.random())))
 
