@@ -10,8 +10,7 @@ from linebot.models.events \
     import MessageEvent as LineMessageEventType, TextMessage as LineTextMessageEventType
 from aiolinebot import AioLineBotApi
 
-from covid_data_getter \
-    import prefectures_dict, PatientsType, get_daily_patients
+from covid_data_getter import prefectures_dict, PatientsType, get_daily_patients
 from db_connector import Firebase
 
 LINE_ACCESS_TOKEN: Final[str] = os.getenv('COVID19_REMINDER_LINE_ACCESS_TOKEN')
@@ -38,30 +37,38 @@ firebase = Firebase()
 # body of echo
 async def echo_body(event: LineTextMessageEventType, user_id: str) -> NoReturn:
     message_text = event.message.text.split()
+
     if message_text[0] == "登録" and len(message_text) >= 1:
         # registration
-        prefectures_list = {"全国": "ALL"}
-        prefectures_list |= ((name, prefecture_id)
-                             for prefecture_id, name in list(prefectures_dict.items())[1:])
-        prefectures_list |= ((name[:-1], prefecture_id)
-                             for prefecture_id, name in list(prefectures_dict.items())[1:])
+        prefectures_dict_reverse: dict[str, str] = {
+            prefecture_ja[:-1]: prefecture_en
+            for prefecture_en, prefecture_ja in prefectures_dict.items()[1:]
+        }
+        prefectures_dict_reverse['全国'] = 'ALL'
 
-        if message_text[1] in prefectures_list.keys():
+        if message_text[1] in prefectures_dict_reverse.keys():
             # able to register, get previous prefecture
-            new_prefecture_id = prefectures_list[message_text[1]]
+            new_prefecture_id: str = prefectures_dict_reverse[message_text[1]]
             search_user = firebase.search_user(user_id)
 
             if len(search_user):
                 previous_prefecture_id = search_user[0].to_dict()['prefectureid']
-                firebase.update_prefecture_userid_list(previous_prefecture_id, user_id, 'remove')
-                firebase.update_user_prefecture_id(user_id, new_prefecture_id)
+                firebase.update_prefecture_userid_list(
+                    prefecture_id=new_prefecture_id,
+                    user_id=user_id,
+                    action='remove'
+                )
+                firebase.update_user_prefecture_id(
+                    user_id=user_id,
+                    prefecture_id=new_prefecture_id
+                )
                 await line_api.reply_message_async(
                     event.reply_token,
                     TextMessage(text="都道府県の変更が完了しました。")
                 )
             else:
                 # register
-                firebase.register_user(user_id, prefectures_list[message_text[1]])
+                firebase.register_user(user_id, prefectures_dict_reverse[message_text[1]])
                 await line_api.reply_message_async(
                     event.reply_token,
                     TextMessage(text="都道府県の登録が完了しました。")
