@@ -1,53 +1,118 @@
 import random
-from typing import List, NoReturn
+from typing import List, NoReturn, TypedDict, Optional
 
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
 from google.cloud.firestore_v1 import Client
 
+UserDataType = TypedDict('UserDataType', {
+    'user_id': str,
+    'prefecture_en_list': List[str]
+})
+
+PrefectureDataType = TypedDict('PrefectureDataType', {
+    'name_en': str,
+    'name_ja': str,
+    'user_id_list': List[str]
+})
+
 
 class Firebase:
 
-    def __init__(self) -> NoReturn:
-        cred = credentials.Certificate('./db_connector/cred.json')
+    def __init__(self, cred_path: str = './db_connector/cred.json') -> NoReturn:
+        cred = credentials.Certificate(cred_path)
         app = firebase_admin.initialize_app(cred, name=str(random.random()))
         self.db: Client = firestore.client(app)
 
-    def get_user_prefecture(self, user_id: str) -> str:
-        users_collection = self.db.collection('users')
-        try:
-            user_data = list(users_collection.where('user_id', '==', user_id).stream())[0]
-            user_prefecture: str = user_data.to_dict()['prefecture_id']
-        except IndexError:
-            return 'Fukui'
-        return user_prefecture
+    def get_user_data(self, user_id: str) -> UserDataType:
+        user_data: UserDataType = self.db.collection('users').document(user_id).get().to_dict()
+        if user_data is None:
+            return {
+                'user_id': user_id,
+                'prefecture_en_list': []
+            }
+        return user_data
 
-    def register_user(self, user_id: str, prefecture_id: str) -> NoReturn:
-        users_collection = self.db.collection('users')
-        users_collection.add({'user_id': user_id, 'prefecture_id': prefecture_id})
+    def get_prefecture_data(self, prefecture_en: str) -> Optional[PrefectureDataType]:
+        prefecture_data: PrefectureDataType \
+            = self.db.collection('prefectures').document(prefecture_en).get().to_dict()
+        if prefecture_data is None:
+            return {
+                'name_en': '',
+                'name_ja': '',
+                'user_id_list': []
+            }
+        return prefecture_data
 
-    def search_user(self, user_id: str):
-        users_collection = self.db.collection('users')
-        return list(users_collection.where('user_id', '==', user_id).stream())
+    def set_user_data(self, user_id: str, prefecture_en_list: List[str]) -> NoReturn:
+        user_doc_ref = self.db.collection('users').document(user_id)
+        user_data: UserDataType = {
+            'user_id': user_id,
+            'prefecture_en_list': prefecture_en_list
+        }
+        user_doc_ref.set(user_data)
 
-    def update_user_prefecture_id(self, user_id: str, prefecture_id: str) -> NoReturn:
-        users_collection = self.db.collection('users')
-        users_doc = list(users_collection.where('user_id', '==', user_id).stream())[0]
-        users_doc_dict = users_doc.to_dict()
+    def set_prefecture_data(
+            self, prefecture_en: str, prefecture_ja: str, user_id_list: List[str]) -> NoReturn:
+        prefecture_doc_ref = self.db.collection('prefectures').document(prefecture_en)
+        prefecture_data: PrefectureDataType = {
+            'name_en': prefecture_en,
+            'name_ja': prefecture_ja,
+            'user_id_list': user_id_list
+        }
+        prefecture_doc_ref.set(prefecture_data)
 
-        users_doc_dict['prefecture_id'] = prefecture_id
-        self.db.collection('users').document(users_doc.id).set(users_doc_dict)
+    def get_user_prefectures_en(self, user_id: str) -> List[str]:
+        user_data: UserDataType = self.get_user_data(user_id=user_id)
+        if user_data is None:
+            return ['ALL']
+        return ['ALL'] + user_data['prefecture_en_list']
 
-    def update_prefecture_userid_list(
-            self, prefecture_id: str, user_id: str, action: str) -> NoReturn:
-        prefecture_collection = self.db.collection('prefectures')
-        prefecture_doc = list(prefecture_collection.where('id', '==', prefecture_id).stream())[0]
-        prefecture_doc_dict = prefecture_doc.to_dict()
+    def add_user_prefecture(self, user_id: str, prefecture_en: str) -> bool:
+        # get previous data
+        user_data: UserDataType = self.get_user_data(user_id=user_id)
+        prefecture_data: PrefectureDataType = self.get_prefecture_data(prefecture_en=prefecture_en)
 
-        if action == 'add':
-            prefecture_doc_dict['user_id'].append(user_id)
-        elif action == 'remove':
-            prefecture_doc_dict['user_id'].remove(user_id)
+        if prefecture_en in user_data['prefecture_en_list']:
+            return False
 
-        self.db.collection('prefectures').document(prefecture_doc.id).set(prefecture_doc_dict)
+        # variable update
+        user_data['prefecture_en_list'].append(prefecture_en)
+        prefecture_data['user_id_list'].append(user_id)
+
+        # db update
+        self.set_user_data(
+            user_id=user_id,
+            prefecture_en_list=user_data['prefecture_en_list']
+        )
+        self.set_prefecture_data(
+            prefecture_en=prefecture_en,
+            prefecture_ja=prefecture_data['name_ja'],
+            user_id_list=prefecture_data['user_id_list']
+        )
+        return True
+
+    def remove_user_prefecture(self, user_id: str, prefecture_en: str) -> bool:
+        # get previous data
+        user_data: UserDataType = self.get_user_data(user_id=user_id)
+        prefecture_data: PrefectureDataType = self.get_prefecture_data(prefecture_en=prefecture_en)
+
+        if prefecture_en not in user_data['prefecture_en_list']:
+            return False
+
+        # variable update
+        user_data['prefecture_en_list'].remove(prefecture_en)
+        prefecture_data['user_id_list'].remove(user_id)
+
+        # db update
+        self.set_user_data(
+            user_id=user_id,
+            prefecture_en_list=user_data['prefecture_en_list']
+        )
+        self.set_prefecture_data(
+            prefecture_en=prefecture_en,
+            prefecture_ja=prefecture_data['name_ja'],
+            user_id_list=prefecture_data['user_id_list']
+        )
+        return True

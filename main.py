@@ -34,67 +34,83 @@ app = FastAPI()
 firebase = Firebase()
 
 
+def get_prefectures_dict_reverse() -> dict[str]:
+    return {
+        **{
+            prefecture_ja: prefecture_en
+            for prefecture_en, prefecture_ja in list(prefectures_dict.items())[1:]
+        },
+        **{
+            prefecture_ja[:-1]: prefecture_en
+            for prefecture_en, prefecture_ja in list(prefectures_dict.items())[1:]
+        }
+    }
+
+
+def add_user_prefecture(user_id: str, new_prefecture: str) -> str:
+    # registration
+    prefectures_dict_reverse: dict[str, str] = get_prefectures_dict_reverse()
+
+    if new_prefecture in prefectures_dict_reverse.keys():
+        is_success: bool = firebase.add_user_prefecture(
+            user_id=user_id,
+            prefecture_en=prefectures_dict_reverse[new_prefecture]
+        )
+        if is_success:
+            return f'{new_prefecture}が通知する都道府県に追加されました！'
+        else:
+            return f'{new_prefecture}は既に登録されています！'
+
+    return '都道府県名の指定が正しくありません！'
+
+
+def remove_user_prefecture(user_id: str, new_prefecture: str) -> str:
+    # registration
+    prefectures_dict_reverse: dict[str, str] = get_prefectures_dict_reverse()
+
+    if new_prefecture in prefectures_dict_reverse.keys():
+        is_success: bool = firebase.remove_user_prefecture(
+            user_id=user_id,
+            prefecture_en=prefectures_dict_reverse[new_prefecture]
+        )
+        if is_success:
+            return f'{new_prefecture}が通知する都道府県から削除されました！'
+        else:
+            return f'{new_prefecture}はまだ登録されていません！'
+
+    return '都道府県名の指定が正しくありません！'
+
+
 # body of echo
 async def echo_body(event: LineTextMessageEventType, user_id: str) -> NoReturn:
-    message_text = event.message.text.split()
+    message_text: List[str] = event.message.text.split()
 
-    if message_text[0] == "登録" and len(message_text) >= 1:
-        # registration
-        prefectures_dict_reverse: dict[str, str] = {
-            prefecture_ja[:-1]: prefecture_en
-            for prefecture_en, prefecture_ja in prefectures_dict.items()[1:]
-        }
-        prefectures_dict_reverse['全国'] = 'ALL'
+    if message_text[0] == '追加' and len(message_text) == 2:
+        reply_message: str = add_user_prefecture(
+            user_id=user_id,
+            new_prefecture=message_text[1]
+        )
 
-        if message_text[1] in prefectures_dict_reverse.keys():
-            # able to register, get previous prefecture
-            new_prefecture_id: str = prefectures_dict_reverse[message_text[1]]
-            search_user = firebase.search_user(user_id)
+    elif message_text[0] == '削除' and len(message_text) == 2:
+        reply_message: str = remove_user_prefecture(
+            user_id=user_id,
+            new_prefecture=message_text[1]
+        )
 
-            if len(search_user):
-                previous_prefecture_id = search_user[0].to_dict()['prefectureid']
-                firebase.update_prefecture_userid_list(
-                    prefecture_id=new_prefecture_id,
-                    user_id=user_id,
-                    action='remove'
-                )
-                firebase.update_user_prefecture_id(
-                    user_id=user_id,
-                    prefecture_id=new_prefecture_id
-                )
-                await line_api.reply_message_async(
-                    event.reply_token,
-                    TextMessage(text="都道府県の変更が完了しました。")
-                )
-            else:
-                # register
-                firebase.register_user(user_id, prefectures_dict_reverse[message_text[1]])
-                await line_api.reply_message_async(
-                    event.reply_token,
-                    TextMessage(text="都道府県の登録が完了しました。")
-                )
-
-            firebase.update_prefecture_userid_list(new_prefecture_id, user_id, 'add')
-
-        else:
-            # not able to register
-            await line_api.reply_message_async(
-                event.reply_token,
-                TextMessage(text="都道府県名の指定が正しくありません。")
-            )
-        pass
     else:
         # send today's number of new infected
         daily_patients: PatientsType = get_daily_patients()
-        # target_prefectures: List[str] = mock_get_target_prefectures()
-        target_prefectures: str = firebase.get_user_prefecture(user_id)
+        target_prefectures: List[str] = firebase.get_user_prefectures_en(user_id)
 
-        reply_message: str = f'{prefectures_dict[target_prefectures]}の新規感染者数: {daily_patients[target_prefectures]}'
+        prefecture = prefectures_dict[target_prefectures[0]]
+        patient = daily_patients[target_prefectures[0]]
+        reply_message: str = f'{prefecture}の新規感染者数: {patient}'
 
-        await line_api.reply_message_async(
-            event.reply_token,
-            TextMessage(text=reply_message)
-        )
+    await line_api.reply_message_async(
+        event.reply_token,
+        TextMessage(text=reply_message)
+    )
+
     return
 
 
@@ -114,9 +130,11 @@ async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
     # process each event
     for request_event in request_events:
         if isinstance(request_event.message, TextMessage):
-            background_tasks.add_task(echo_body,
-                                      event=request_event,
-                                      user_id=request_event.source.user_id)
+            background_tasks.add_task(
+                echo_body,
+                event=request_event,
+                user_id=request_event.source.user_id
+            )
 
     # return response
     return Response(content="OK", status_code=200)

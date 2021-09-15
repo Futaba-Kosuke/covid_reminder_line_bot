@@ -6,10 +6,10 @@ from firebase_admin import credentials
 from firebase_admin import firestore
 from google.cloud.firestore_v1 import Client
 from google.cloud.firestore_v1.collection import CollectionReference
-from google.cloud.firestore_v1.base_document import DocumentSnapshot
+
+from main import Firebase
 
 prefectures_dict: Final[Dict[str, str]] = {
-    'ALL': '全国',
     'Hokkaido': '北海道',
     'Aomori': '青森県',
     'Iwate': '岩手県',
@@ -59,17 +59,11 @@ prefectures_dict: Final[Dict[str, str]] = {
     'Okinawa': '沖縄県'
 }
 
-FIREBASE_CRED_ID = os.getenv("COVID19_REMINDER_FIREBASE_CRED_ID")
-
-cred: credentials.Certificate \
-    = credentials.Certificate(os.path.dirname(__file__)
-                              + "\\covid-reminder-line-bot-firebase-adminsdk-"
-                              + FIREBASE_CRED_ID + ".json")
-app: firebase_admin.App = firebase_admin.initialize_app(cred)
-
-db: Client = firestore.client(app)
-ref: CollectionReference = db.collection(u'prefectures')
-docs = ref.stream()
-
-for id, name in list(prefectures_dict.items())[1:]:
-    ref.add({"id": id, "name": name, "userid": []})
+if __name__ == '__main__':
+    firebase = Firebase('./cred.json')
+    for key, value in prefectures_dict.items():
+        firebase.set_prefecture_data(
+            prefecture_en=key,
+            prefecture_ja=value,
+            user_id_list=[]
+        )
