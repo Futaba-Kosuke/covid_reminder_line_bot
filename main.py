@@ -10,8 +10,8 @@ from linebot.models.events \
     import MessageEvent as LineMessageEventType, TextMessage as LineTextMessageEventType
 from aiolinebot import AioLineBotApi
 
-from covid_data_getter \
-    import prefectures_dict, PatientsType, get_daily_patients, mock_get_target_prefectures
+from covid_data_getter import prefectures_dict, PatientsType, get_daily_patients
+from db_connector import Firebase
 
 LINE_ACCESS_TOKEN: Final[str] = os.getenv('COVID19_REMINDER_LINE_ACCESS_TOKEN')
 LINE_CHANNEL_SECRET: Final[str] = os.getenv('COVID19_REMINDER_LINE_CHANNEL_SECRET')
@@ -30,18 +30,87 @@ parser = WebhookParser(channel_secret=LINE_CHANNEL_SECRET)
 # startup FastAPI
 app = FastAPI()
 
+# firebase Instance
+firebase = Firebase()
+
+
+def get_prefectures_dict_reverse() -> dict[str]:
+    return {
+        **{
+            prefecture_ja: prefecture_en
+            for prefecture_en, prefecture_ja in list(prefectures_dict.items())[1:]
+        },
+        **{
+            prefecture_ja[:-1]: prefecture_en
+            for prefecture_en, prefecture_ja in list(prefectures_dict.items())[1:]
+        }
+    }
+
+
+def add_user_prefecture(user_id: str, new_prefecture: str) -> str:
+    # registration
+    prefectures_dict_reverse: dict[str, str] = get_prefectures_dict_reverse()
+
+    if new_prefecture in prefectures_dict_reverse.keys():
+        is_success: bool = firebase.add_user_prefecture(
+            user_id=user_id,
+            prefecture_en=prefectures_dict_reverse[new_prefecture]
+        )
+        if is_success:
+            return f'{new_prefecture}が通知する都道府県に追加されました！'
+        else:
+            return f'{new_prefecture}は既に登録されています！'
+
+    return '都道府県名の指定が正しくありません！'
+
+
+def remove_user_prefecture(user_id: str, new_prefecture: str) -> str:
+    # registration
+    prefectures_dict_reverse: dict[str, str] = get_prefectures_dict_reverse()
+
+    if new_prefecture in prefectures_dict_reverse.keys():
+        is_success: bool = firebase.remove_user_prefecture(
+            user_id=user_id,
+            prefecture_en=prefectures_dict_reverse[new_prefecture]
+        )
+        if is_success:
+            return f'{new_prefecture}が通知する都道府県から削除されました！'
+        else:
+            return f'{new_prefecture}はまだ登録されていません！'
+
+    return '都道府県名の指定が正しくありません！'
+
 
 # body of echo
-async def echo_body(event: LineTextMessageEventType) -> NoReturn:
-    daily_patients: PatientsType = get_daily_patients()
-    target_prefectures: List[str] = mock_get_target_prefectures()
+async def echo_body(event: LineTextMessageEventType, user_id: str) -> NoReturn:
+    message_text: List[str] = event.message.text.split()
 
-    reply_message: str = f'{prefectures_dict[target_prefectures[0]]}の新規感染者数: {daily_patients[target_prefectures[0]]}'
+    if message_text[0] == '追加' and len(message_text) == 2:
+        reply_message: str = add_user_prefecture(
+            user_id=user_id,
+            new_prefecture=message_text[1]
+        )
+
+    elif message_text[0] == '削除' and len(message_text) == 2:
+        reply_message: str = remove_user_prefecture(
+            user_id=user_id,
+            new_prefecture=message_text[1]
+        )
+
+    else:
+        # send today's number of new infected
+        daily_patients: PatientsType = get_daily_patients()
+        target_prefectures: List[str] = firebase.get_user_prefectures_en(user_id)
+
+        prefecture = prefectures_dict[target_prefectures[0]]
+        patient = daily_patients[target_prefectures[0]]
+        reply_message: str = f'{prefecture}の新規感染者数: {patient}'
 
     await line_api.reply_message_async(
         event.reply_token,
         TextMessage(text=reply_message)
     )
+
     return
 
 
@@ -61,7 +130,11 @@ async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
     # process each event
     for request_event in request_events:
         if isinstance(request_event.message, TextMessage):
-            background_tasks.add_task(echo_body, event=request_event)
+            background_tasks.add_task(
+                echo_body,
+                event=request_event,
+                user_id=request_event.source.user_id
+            )
 
     # return response
     return Response(content="OK", status_code=200)
