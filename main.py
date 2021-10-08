@@ -81,6 +81,20 @@ def remove_user_prefecture(user_id: str, new_prefecture: str) -> str:
     return '都道府県名の指定が正しくありません！'
 
 
+def get_daily_patients_message(user_id: str) -> str:
+    # send today's number of new infected
+    daily_patients: PatientsType = get_daily_patients()
+    target_prefectures: List[str] = firebase.get_user_prefectures_en(user_id)
+
+    reply_message: str = ''
+    for target_prefecture in target_prefectures:
+        prefecture = prefectures_dict[target_prefecture]
+        patient = daily_patients[target_prefecture]
+        reply_message += f'{prefecture}の新規感染者数: {patient}\n'
+
+    return reply_message[:-1]
+
+
 # body of echo
 async def echo_body(event: LineTextMessageEventType, user_id: str) -> NoReturn:
     message_text: List[str] = event.message.text.split()
@@ -98,13 +112,7 @@ async def echo_body(event: LineTextMessageEventType, user_id: str) -> NoReturn:
         )
 
     else:
-        # send today's number of new infected
-        daily_patients: PatientsType = get_daily_patients()
-        target_prefectures: List[str] = firebase.get_user_prefectures_en(user_id)
-
-        prefecture = prefectures_dict[target_prefectures[0]]
-        patient = daily_patients[target_prefectures[0]]
-        reply_message: str = f'{prefecture}の新規感染者数: {patient}'
+        reply_message: str = get_daily_patients_message(user_id=user_id)
 
     await line_api.reply_message_async(
         event.reply_token,
