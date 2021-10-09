@@ -10,7 +10,7 @@ from linebot.models.events \
     import MessageEvent as LineMessageEventType, TextMessage as LineTextMessageEventType
 from aiolinebot import AioLineBotApi
 
-from covid_data_getter import prefectures_dict, PatientsType, get_daily_patients
+from covid_data_getter import prefectures_dict, get_daily_patients
 from db_connector import Firebase
 
 LINE_ACCESS_TOKEN: Final[str] = os.getenv('COVID19_REMINDER_LINE_ACCESS_TOKEN')
@@ -83,10 +83,10 @@ def remove_user_prefecture(user_id: str, new_prefecture: str) -> str:
 
 def get_daily_patients_message(user_id: str) -> str:
     # send today's number of new infected
-    daily_patients: PatientsType = get_daily_patients()
+    daily_patients, date = get_daily_patients()
     target_prefectures: List[str] = firebase.get_user_prefectures_en(user_id)
 
-    reply_message: str = ''
+    reply_message: str = f'{date}\n'
     for target_prefecture in target_prefectures:
         prefecture = prefectures_dict[target_prefecture]
         patient = daily_patients[target_prefecture]

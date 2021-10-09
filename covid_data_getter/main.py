@@ -1,4 +1,4 @@
-from typing import List, Dict, TypedDict, Final
+from typing import Dict, Tuple, TypedDict, Final
 
 import pandas as pd
 
@@ -62,10 +62,10 @@ PatientsType = TypedDict('PatientsType', {
 })
 
 
-def get_daily_patients() -> PatientsType:
+def get_daily_patients() -> Tuple[PatientsType, str]:
     df = pd.read_csv(OPEN_DATA_URL)[-48:]
     daily_patients: PatientsType = {
         row['Prefecture']: row['Newly confirmed cases']
         for index, row in df.iterrows()
     }
-    return daily_patients
+    return daily_patients, df['Date'][df.index[0]]

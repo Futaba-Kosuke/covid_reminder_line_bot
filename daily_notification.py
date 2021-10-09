@@ -14,7 +14,7 @@ firebase = Firebase()
 
 
 def main() -> None:
-    daily_patients: PatientsType = get_daily_patients()
+    daily_patients, date = get_daily_patients()
     all_users: List[UserDataType] = firebase.get_all_users()
 
     for user in all_users:
@@ -22,7 +22,7 @@ def main() -> None:
         prefecture_en_list: List[str] = user['prefecture_en_list']
 
         all_patients: PatientsType = daily_patients['ALL']
-        message = f'全国の新規感染者数: {all_patients}\n'
+        message = f'{date}\n全国の新規感染者数: {all_patients}\n'
         for prefecture_en in prefecture_en_list:
             patients: PatientsType = daily_patients[prefecture_en]
             prefecture_ja: str = prefectures_dict[prefecture_en]
