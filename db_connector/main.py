@@ -1,5 +1,5 @@
 import random
-from typing import List, NoReturn, TypedDict, Optional
+from typing import List, NoReturn, TypedDict
 
 import firebase_admin
 from firebase_admin import credentials
@@ -34,7 +34,10 @@ class Firebase:
             }
         return user_data
 
-    def get_prefecture_data(self, prefecture_en: str) -> Optional[PrefectureDataType]:
+    def get_all_users(self) -> List[UserDataType]:
+        return [doc.to_dict() for doc in self.db.collection('users').stream()]
+
+    def get_prefecture_data(self, prefecture_en: str) -> PrefectureDataType:
         prefecture_data: PrefectureDataType \
             = self.db.collection('prefectures').document(prefecture_en).get().to_dict()
         if prefecture_data is None:
@@ -44,6 +47,9 @@ class Firebase:
                 'user_id_list': []
             }
         return prefecture_data
+
+    def get_all_prefecture(self) -> List[PrefectureDataType]:
+        return [doc.to_dict() for doc in self.db.collection('prefectures').stream()]
 
     def set_user_data(self, user_id: str, prefecture_en_list: List[str]) -> NoReturn:
         user_doc_ref = self.db.collection('users').document(user_id)
