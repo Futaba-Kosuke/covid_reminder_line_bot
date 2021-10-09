@@ -1,3 +1,4 @@
+import os
 import random
 from typing import List, NoReturn, TypedDict
 
@@ -21,6 +22,9 @@ PrefectureDataType = TypedDict('PrefectureDataType', {
 class Firebase:
 
     def __init__(self, cred_path: str = './db_connector/cred.json') -> NoReturn:
+        if not os.path.isfile(cred_path):
+            with open(cred_path, 'w') as f:
+                f.write(os.getenv('FIREBASE_CRED_JSON', None))
         cred = credentials.Certificate(cred_path)
         app = firebase_admin.initialize_app(cred, name=str(random.random()))
         self.db: Client = firestore.client(app)

@@ -149,7 +149,8 @@ async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
 
 
 def main():
-    uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True, workers=2)
+    port = int(os.getenv("PORT", 5000))
+    uvicorn.run('main:app', host='0.0.0.0', port=port, reload=True, workers=2)
 
 
 if __name__ == '__main__':
