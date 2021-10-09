@@ -69,7 +69,3 @@ def get_daily_patients() -> PatientsType:
         for index, row in df.iterrows()
     }
     return daily_patients
-
-
-def mock_get_target_prefectures() -> List[str]:
-    return ['Fukui']
