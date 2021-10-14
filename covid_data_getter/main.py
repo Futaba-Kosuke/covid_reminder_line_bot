@@ -1,4 +1,5 @@
 from typing import Dict, Tuple, TypedDict, Final
+import re
 
 import pandas as pd
 
@@ -62,10 +63,13 @@ PatientsType = TypedDict('PatientsType', {
 })
 
 
-def get_daily_patients() -> Tuple[PatientsType, str]:
+def get_daily_patients() -> Tuple[PatientsType, int, int]:
     df = pd.read_csv(OPEN_DATA_URL)[-48:]
     daily_patients: PatientsType = {
         row['Prefecture']: row['Newly confirmed cases']
         for index, row in df.iterrows()
     }
-    return daily_patients, df['Date'][df.index[0]]
+
+    month, day = re.findall('/(.*?\d+)', df['Date'][df.index[0]])
+
+    return daily_patients, int(month), int(day)

@@ -1,0 +1,65 @@
+{
+  "type": "bubble",
+  "size": "giga",
+  "direction": "ltr",
+  "header": {
+    "type": "box",
+    "layout": "vertical",
+    "backgroundColor": "#149C44FF",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "text",
+            "text": "2021 / 10 / 13 の感染者数",
+            "weight": "bold",
+            "size": "lg",
+            "color": "#FFFFFFFF",
+            "align": "center",
+            "contents": []
+          },
+          {
+            "type": "text",
+            "text": "10月14日 12:00時点",
+            "color": "#FFFFFFED",
+            "align": "center",
+            "contents": []
+          }
+        ]
+      }
+    ]
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "horizontal",
+        "contents": [
+          {
+            "type": "text",
+            "text": "全国",
+            "size": "lg",
+            "color": "#4D4D4DFF",
+            "flex": 2,
+            "align": "start",
+            "contents": []
+          },
+          {
+            "type": "text",
+            "text": "723人",
+            "size": "lg",
+            "color": "#4D4D4D",
+            "flex": 1,
+            "align": "end",
+            "contents": []
+          }
+        ]
+      }
+    ]
+  }
+}

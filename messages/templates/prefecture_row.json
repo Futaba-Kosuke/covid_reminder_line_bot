@@ -1,0 +1,35 @@
+{
+  "type": "box",
+  "layout": "vertical",
+  "spacing": "md",
+  "contents": [
+    {
+      "type": "separator",
+      "color": "#666666FF"
+    },
+    {
+      "type": "box",
+      "layout": "horizontal",
+      "contents": [
+        {
+          "type": "text",
+          "text": "東京都",
+          "size": "md",
+          "color": "#4d4d4dFF",
+          "flex": 2,
+          "align": "start",
+          "contents": []
+        },
+        {
+          "type": "text",
+          "text": "72人",
+          "size": "md",
+          "color": "#4d4d4dFF",
+          "flex": 1,
+          "align": "end",
+          "contents": []
+        }
+      ]
+    }
+  ]
+}
