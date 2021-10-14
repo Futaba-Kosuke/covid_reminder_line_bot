@@ -35,7 +35,7 @@ def get_patients_message(
         if prefecture == 'ALL':
             # 全国データの更新
             flex_message['body']['contents'][0]['contents'][1]['text'] \
-                = patients[target_prefectures[0]]
+                = f'{str(patients[target_prefectures[0]])}人'
             continue
 
         # 各県データの追加

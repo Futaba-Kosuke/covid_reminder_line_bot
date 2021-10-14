@@ -98,20 +98,26 @@ async def echo_body(event: LineTextMessageEventType, user_id: str) -> NoReturn:
             user_id=user_id,
             new_prefecture=message_text[1]
         )
+        await line_api.reply_message_async(
+            event.reply_token,
+            TextMessage(text=reply_message)
+        )
 
     elif message_text[0] == '削除' and len(message_text) == 2:
         reply_message: str = remove_user_prefecture(
             user_id=user_id,
             new_prefecture=message_text[1]
         )
+        await line_api.reply_message_async(
+            event.reply_token,
+            TextMessage(text=reply_message)
+        )
 
     else:
-        reply_message: str = get_daily_patients_message(user_id=user_id)
-
-    await line_api.reply_message_async(
-        event.reply_token,
-        TextMessage(text=reply_message)
-    )
+        await line_api.reply_message_async(
+            event.reply_token,
+            get_daily_patients_message(user_id)
+        )
 
     return
 
