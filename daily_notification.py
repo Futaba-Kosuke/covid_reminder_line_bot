@@ -1,5 +1,6 @@
 import os
 from typing import Final, List
+from datetime import datetime
 
 from aiolinebot import AioLineBotApi
 
@@ -14,6 +15,7 @@ firebase = Firebase()
 
 
 def main() -> None:
+    now = datetime.now()
     daily_patients, month, day = get_daily_patients()
     all_users: List[UserDataType] = firebase.get_all_users()
 
@@ -21,7 +23,7 @@ def main() -> None:
         user_id: str = user['user_id']
         prefecture_en_list: List[str] = user['prefecture_en_list']
 
-        message = get_patients_message(daily_patients, prefecture_en_list, month, day)
+        message = get_patients_message(daily_patients, prefecture_en_list, month, day, now)
 
         line_api.push_message(to=user_id, messages=message)
 

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Any
 import json
 import copy
 from datetime import datetime
@@ -12,7 +12,8 @@ def get_patients_message(
         patients: PatientsType,
         target_prefectures: List[str],
         month: int,
-        day: int
+        day: int,
+        now: Any
 ) -> FlexSendMessage:
     with open('messages/templates/flex_message.json') as f:
         flex_message = json.load(f)
@@ -26,9 +27,12 @@ def get_patients_message(
     flex_message['header']['contents'][0]['contents'][0]['text'] \
         = f'{month}月{day}日 COVID-19 感染者数'
 
-    now = datetime.now()
+    month = str(now.month).zfill(2)
+    day = str(now.day).zfill(2)
+    hour = str(now.hour).zfill(2)
+    minute = str(now.minute).zfill(2)
     flex_message['header']['contents'][0]['contents'][1]['text'] \
-        = f'{now.month}月{now.day}日 {now.hour}:{now.minute} 時点'
+        = f'{month}月{day}日 {hour}:{minute} 時点'
 
     for prefecture in target_prefectures:
 

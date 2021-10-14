@@ -1,6 +1,7 @@
 import os
 import sys
 from typing import Final, List, NoReturn
+from datetime import datetime
 
 import uvicorn
 from fastapi import FastAPI, Request, Response, BackgroundTasks
@@ -83,10 +84,11 @@ def remove_user_prefecture(user_id: str, new_prefecture: str) -> str:
 
 
 def get_daily_patients_message(user_id: str) -> FlexSendMessage:
+    now = datetime.now()
     daily_patients, month, day = get_daily_patients()
     target_prefectures: List[str] = firebase.get_user_prefectures_en(user_id)
 
-    return get_patients_message(daily_patients, target_prefectures, month, day)
+    return get_patients_message(daily_patients, target_prefectures, month, day, now)
 
 
 # body of echo
