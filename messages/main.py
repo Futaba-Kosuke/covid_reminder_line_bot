@@ -24,7 +24,7 @@ def get_patients_message(
         reference_content = json.load(f)
 
     flex_message['header']['contents'][0]['contents'][0]['text'] \
-        = f'{month}月{day}日 COVID-19 感染者数'
+        = f'{month}月{day}日 COVID-19 感染状況'
 
     month = str(now.month).zfill(2)
     day = str(now.day).zfill(2)

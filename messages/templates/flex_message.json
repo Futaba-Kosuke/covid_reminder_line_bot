@@ -13,7 +13,7 @@
         "contents": [
           {
             "type": "text",
-            "text": "2021 / 10 / 13 の感染者数",
+            "text": "MM月DD日 COVID-19 感染状況",
             "weight": "bold",
             "size": "lg",
             "color": "#FFFFFFFF",
@@ -22,7 +22,7 @@
           },
           {
             "type": "text",
-            "text": "10月14日 12:00時点",
+            "text": "MM月DD日 12:00時点",
             "color": "#FFFFFFED",
             "align": "center",
             "contents": []
