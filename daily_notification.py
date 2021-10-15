@@ -21,7 +21,7 @@ def main() -> None:
 
     for user in all_users:
         user_id: str = user['user_id']
-        prefecture_en_list: List[str] = user['prefecture_en_list']
+        prefecture_en_list: List[str] = ['ALL'] + user['prefecture_en_list']
 
         message = get_patients_message(daily_patients, prefecture_en_list, month, day, now)
 
