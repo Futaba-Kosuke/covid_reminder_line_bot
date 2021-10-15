@@ -1,7 +1,6 @@
 from typing import List, Any
 import json
 import copy
-from datetime import datetime
 
 from linebot.models import FlexSendMessage
 
@@ -38,13 +37,18 @@ def get_patients_message(
 
         if prefecture == 'ALL':
             # 全国データの更新
-            flex_message['body']['contents'][0]['contents'][1]['text'] \
-                = f'{str(patients[target_prefectures[0]])}人'
+            flex_message['body']['contents'][2]['contents'][1]['text'] \
+                = f'{str(patients[prefecture]["patients"])}人'
+            flex_message['body']['contents'][2]['contents'][2]['text'] \
+                = f'{str(patients[prefecture]["severe"])}人'
             continue
 
         # 各県データの追加
         prefecture_row['contents'][1]['contents'][0]['text'] = prefectures_dict[prefecture]
-        prefecture_row['contents'][1]['contents'][1]['text'] = f'{str(patients[prefecture])}人'
+        prefecture_row['contents'][1]['contents'][1]['text'] \
+            = f'{str(patients[prefecture]["patients"])}人'
+        prefecture_row['contents'][1]['contents'][2]['text'] \
+            = f'{str(patients[prefecture]["severe"])}人'
 
         flex_message['body']['contents'].append(copy.deepcopy(prefecture_row))
 

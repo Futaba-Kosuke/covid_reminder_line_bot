@@ -1,8 +1,8 @@
 {
   "type": "text",
   "text": "厚生労働省 オープンデータより",
-  "size": "sm",
-  "color": "#4D4D4DDD",
+  "size": "xs",
+  "color": "#4D4D4DCC",
   "align": "end",
   "contents": []
 }

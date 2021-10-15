@@ -16,8 +16,17 @@
           "text": "東京都",
           "size": "md",
           "color": "#4d4d4dFF",
-          "flex": 2,
+          "flex": 1,
           "align": "start",
+          "contents": []
+        },
+        {
+          "type": "text",
+          "text": "72人",
+          "size": "md",
+          "color": "#4d4d4dFF",
+          "flex": 1,
+          "align": "end",
           "contents": []
         },
         {
