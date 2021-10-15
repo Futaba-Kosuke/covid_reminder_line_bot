@@ -107,7 +107,7 @@ async def echo_body(event: LineTextMessageEventType, user_id: str) -> NoReturn:
     message_text: List[str] = event.message.text.split(' ', 1)
 
     # 都道府県追加／地方のクイックリプライを送信
-    if message_text[0] == '通知地域を追加する':
+    if message_text[0] == '通知する地域を追加する':
         text = 'どの地方の都道府県を追加しますか？'
         quick_reply = get_quick_reply_buttons(
             prefix='追加',
@@ -142,7 +142,7 @@ async def echo_body(event: LineTextMessageEventType, user_id: str) -> NoReturn:
         )
 
     # 都道府県の削除／都道府県のクイックリプライを送信
-    elif message_text[0] == '通知地域を削除する':
+    elif message_text[0] == '通知する地域を削除する':
         prefectures_en = firebase.get_user_prefectures_en(user_id=user_id)
         prefectures_ja = [prefectures_dict[prefecture_en] for prefecture_en in prefectures_en[1:]]
 
