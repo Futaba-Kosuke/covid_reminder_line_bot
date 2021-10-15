@@ -1,8 +1,9 @@
-from typing import List, Any
+from typing import List, Any, Final, Dict
 import json
 import copy
 
-from linebot.models import FlexSendMessage
+from linebot.models \
+    import FlexSendMessage, TextSendMessage, QuickReply, QuickReplyButton, MessageAction
 
 from covid_data_getter import PatientsType, prefectures_dict
 
@@ -55,3 +56,12 @@ def get_patients_message(
     flex_message['body']['contents'].append(reference_content)
 
     return FlexSendMessage(alt_text=f'{month}月{day}日 COVID-19 感染者数', contents=flex_message)
+
+
+def get_quick_reply_buttons(prefix: str, values: List[str]) -> QuickReply:
+    items = [
+        QuickReplyButton(
+            action=MessageAction(label=value, text=f'{prefix} {value}')
+        ) for value in values
+    ]
+    return QuickReply(items=items)
