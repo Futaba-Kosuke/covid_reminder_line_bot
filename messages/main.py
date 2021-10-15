@@ -26,12 +26,12 @@ def get_patients_message(
     flex_message['header']['contents'][0]['contents'][0]['text'] \
         = f'{month}月{day}日 COVID-19 感染状況'
 
-    month = str(now.month).zfill(2)
-    day = str(now.day).zfill(2)
-    hour = str(now.hour).zfill(2)
-    minute = str(now.minute).zfill(2)
+    month_now = str(now.month).zfill(2)
+    day_now = str(now.day).zfill(2)
+    hour_now = str(now.hour).zfill(2)
+    minute_now = str(now.minute).zfill(2)
     flex_message['header']['contents'][0]['contents'][1]['text'] \
-        = f'{month}月{day}日 {hour}:{minute} 時点'
+        = f'{month_now}月{day_now}日 {hour_now}:{minute_now} 時点'
 
     for prefecture in target_prefectures:
 
