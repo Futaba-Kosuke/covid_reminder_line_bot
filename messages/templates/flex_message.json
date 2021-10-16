@@ -1,0 +1,118 @@
+{
+  "type": "bubble",
+  "size": "giga",
+  "direction": "ltr",
+  "header": {
+    "type": "box",
+    "layout": "vertical",
+    "backgroundColor": "#149C44FF",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "text",
+            "text": "MM月DD日 COVID-19 感染状況",
+            "weight": "bold",
+            "size": "lg",
+            "color": "#FFFFFFFF",
+            "align": "center",
+            "contents": []
+          },
+          {
+            "type": "text",
+            "text": "MM月DD日 12:00時点",
+            "color": "#FFFFFFED",
+            "align": "center",
+            "contents": []
+          }
+        ]
+      }
+    ]
+  },
+  "body": {
+    "type": "box",
+    "layout": "vertical",
+    "spacing": "md",
+    "contents": [
+      {
+        "type": "box",
+        "layout": "vertical",
+        "spacing": "md",
+        "contents": [
+          {
+            "type": "box",
+            "layout": "horizontal",
+            "contents": [
+              {
+                "type": "text",
+                "text": "都道府県",
+                "size": "sm",
+                "color": "#4D4D4DCC",
+                "flex": 1,
+                "align": "start",
+                "contents": []
+              },
+              {
+                "type": "text",
+                "text": "新規の陽性者数",
+                "size": "xs",
+                "color": "#4D4D4DCC",
+                "flex": 1,
+                "align": "end",
+                "contents": []
+              },
+              {
+                "type": "text",
+                "text": "現在の重症者数",
+                "size": "xs",
+                "color": "#4D4D4DCC",
+                "flex": 1,
+                "align": "end",
+                "contents": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "separator",
+        "color": "#666666FF"
+      },
+      {
+        "type": "box",
+        "layout": "horizontal",
+        "contents": [
+          {
+            "type": "text",
+            "text": "全国",
+            "size": "lg",
+            "color": "#4D4D4DFF",
+            "flex": 1,
+            "align": "start",
+            "contents": []
+          },
+          {
+            "type": "text",
+            "text": "M人",
+            "size": "lg",
+            "color": "#4D4D4D",
+            "flex": 1,
+            "align": "end",
+            "contents": []
+          },
+          {
+            "type": "text",
+            "text": "N人",
+            "size": "lg",
+            "color": "#4D4D4D",
+            "flex": 1,
+            "align": "end",
+            "contents": []
+          }
+        ]
+      }
+    ]
+  }
+}

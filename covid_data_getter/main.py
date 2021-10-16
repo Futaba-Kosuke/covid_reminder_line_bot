@@ -1,9 +1,16 @@
 from typing import Dict, Tuple, TypedDict, Final
+import re
 
 import pandas as pd
 
-OPEN_DATA_URL: Final[str] \
+PATIENTS_DATA_URL: Final[str] \
     = 'https://covid19.mhlw.go.jp/public/opendata/newly_confirmed_cases_daily.csv'
+
+SEVERE_DATA_URL: Final[str] \
+    = 'https://covid19.mhlw.go.jp/public/opendata/severe_cases_daily.csv'
+
+PATIENTS_COLUMN: Final[str] = 'Newly confirmed cases'
+SEVERE_COLUMN: Final[str] = 'Severe cases'
 
 prefectures_dict: Final[Dict[str, str]] = {
     'ALL': '全国',
@@ -56,16 +63,28 @@ prefectures_dict: Final[Dict[str, str]] = {
     'Okinawa': '沖縄県'
 }
 
+PatientType = TypedDict('PatientType', {
+    'patients': int,
+    'severe': int
+})
+
 PatientsType = TypedDict('PatientsType', {
-    prefecture: int
+    prefecture: PatientType
     for prefecture in prefectures_dict.keys()
 })
 
 
-def get_daily_patients() -> Tuple[PatientsType, str]:
-    df = pd.read_csv(OPEN_DATA_URL)[-48:]
+def get_daily_patients() -> Tuple[PatientsType, int, int]:
+    patients_df = pd.read_csv(PATIENTS_DATA_URL)[-48:]
+    patients_df[SEVERE_COLUMN] = pd.read_csv(SEVERE_DATA_URL)[-48:][SEVERE_COLUMN].values
     daily_patients: PatientsType = {
-        row['Prefecture']: row['Newly confirmed cases']
-        for index, row in df.iterrows()
+        row['Prefecture']: {
+            'patients': row[PATIENTS_COLUMN],
+            'severe': row[SEVERE_COLUMN]
+        }
+        for index, row in patients_df.iterrows()
     }
-    return daily_patients, df['Date'][df.index[0]]
+
+    month, day = re.findall('/(.*?\d+)', patients_df['Date'][patients_df.index[0]])
+
+    return daily_patients, int(month), int(day)

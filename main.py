@@ -1,17 +1,19 @@
 import os
 import sys
 from typing import Final, List, NoReturn
+from datetime import datetime
 
 import uvicorn
 from fastapi import FastAPI, Request, Response, BackgroundTasks
 from linebot import WebhookParser, exceptions
-from linebot.models import TextMessage
+from linebot.models import TextMessage, FlexSendMessage
 from linebot.models.events \
     import MessageEvent as LineMessageEventType, TextMessage as LineTextMessageEventType
 from aiolinebot import AioLineBotApi
 
 from covid_data_getter import prefectures_dict, get_daily_patients
 from db_connector import Firebase
+from messages import get_patients_message
 
 LINE_ACCESS_TOKEN: Final[str] = os.getenv('COVID19_REMINDER_LINE_ACCESS_TOKEN')
 LINE_CHANNEL_SECRET: Final[str] = os.getenv('COVID19_REMINDER_LINE_CHANNEL_SECRET')
@@ -81,18 +83,12 @@ def remove_user_prefecture(user_id: str, new_prefecture: str) -> str:
     return '都道府県名の指定が正しくありません！'
 
 
-def get_daily_patients_message(user_id: str) -> str:
-    # send today's number of new infected
-    daily_patients, date = get_daily_patients()
+def get_daily_patients_message(user_id: str) -> FlexSendMessage:
+    now = datetime.now()
+    daily_patients, month, day = get_daily_patients()
     target_prefectures: List[str] = firebase.get_user_prefectures_en(user_id)
 
-    reply_message: str = f'{date}\n'
-    for target_prefecture in target_prefectures:
-        prefecture = prefectures_dict[target_prefecture]
-        patient = daily_patients[target_prefecture]
-        reply_message += f'{prefecture}の新規感染者数: {patient}\n'
-
-    return reply_message[:-1]
+    return get_patients_message(daily_patients, target_prefectures, month, day, now)
 
 
 # body of echo
@@ -104,20 +100,26 @@ async def echo_body(event: LineTextMessageEventType, user_id: str) -> NoReturn:
             user_id=user_id,
             new_prefecture=message_text[1]
         )
+        await line_api.reply_message_async(
+            event.reply_token,
+            TextMessage(text=reply_message)
+        )
 
     elif message_text[0] == '削除' and len(message_text) == 2:
         reply_message: str = remove_user_prefecture(
             user_id=user_id,
             new_prefecture=message_text[1]
         )
+        await line_api.reply_message_async(
+            event.reply_token,
+            TextMessage(text=reply_message)
+        )
 
     else:
-        reply_message: str = get_daily_patients_message(user_id=user_id)
-
-    await line_api.reply_message_async(
-        event.reply_token,
-        TextMessage(text=reply_message)
-    )
+        await line_api.reply_message_async(
+            event.reply_token,
+            get_daily_patients_message(user_id)
+        )
 
     return
 
