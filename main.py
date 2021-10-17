@@ -3,7 +3,6 @@ import sys
 from typing import Final, List, Dict, NoReturn
 from datetime import datetime
 
-import uvicorn
 from fastapi import FastAPI, Request, Response, BackgroundTasks
 from linebot import WebhookParser, exceptions
 from linebot.models import TextMessage, TextSendMessage, FlexSendMessage
@@ -201,12 +200,3 @@ async def echo(request: Request, background_tasks: BackgroundTasks) -> Response:
 
     # return response
     return Response(content="OK", status_code=200)
-
-
-def main():
-    port = int(os.getenv("PORT", 5000))
-    uvicorn.run('main:app', host='0.0.0.0', port=port, reload=True, workers=2)
-
-
-if __name__ == '__main__':
-    main()
